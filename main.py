@@ -4,5 +4,83 @@ main.py - 💰 경제 상식 퀴즈 게임
 실행: python3 main.py
 """
 
+
+LINE = "=" * 44
+THIN_LINE = "-" * 44
+
+
+class QuizGame:
+    """게임 전체(메뉴, 퀴즈 목록, 점수)를 관리하는 클래스"""
+
+    def __init__(self):
+        self.quizzes = []  # 아직 퀴즈 데이터가 없다
+
+    # ------------------------------------------------------------
+    # 입력 처리
+    # ------------------------------------------------------------
+    def get_number(self, prompt, min_value, max_value):
+        """min_value~max_value 사이 정수를 받을 때까지 계속 다시 묻는다."""
+        while True:
+            text = input(prompt).strip()  # 앞뒤 공백 제거 (" 1 " -> "1")
+            if text == "":
+                print("⚠️ 입력이 비어 있습니다. 숫자를 입력하세요.")
+                continue
+            try:
+                number = int(text)
+            except ValueError:
+                print(f"⚠️ 잘못된 입력입니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+            if number < min_value or number > max_value:
+                print(f"⚠️ 잘못된 입력입니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+            return number
+
+    # ------------------------------------------------------------
+    # 메뉴
+    # ------------------------------------------------------------
+    def show_menu(self):
+        """메인 메뉴를 출력한다."""
+        print()
+        print(LINE)
+        print("        💰 경제 상식 퀴즈 게임 💰")
+        print(LINE)
+        print("1. 퀴즈 풀기")
+        print("2. 퀴즈 추가")
+        print("3. 퀴즈 목록")
+        print("4. 점수 확인")
+        print("5. 종료")
+        print(LINE)
+
+    def coming_soon(self):
+        """아직 만들지 않은 메뉴를 골랐을 때 안내한다."""
+        print("🚧 아직 준비 중인 기능입니다.")
+
+    # ------------------------------------------------------------
+    # 게임 실행 (메인 루프)
+    # ------------------------------------------------------------
+    def run(self):
+        """메뉴를 보여주고, 선택한 기능을 실행하는 것을 '종료'를 고를 때까지 반복한다."""
+        try:
+            while True:
+                self.show_menu()
+                choice = self.get_number("선택: ", 1, 5)
+                if choice == 1:
+                    self.coming_soon()
+                elif choice == 2:
+                    self.coming_soon()
+                elif choice == 3:
+                    self.coming_soon()
+                elif choice == 4:
+                    self.coming_soon()
+                else:  # choice == 5
+                    print("👋 게임을 종료합니다. 다음에 또 만나요!")
+                    break
+        except (KeyboardInterrupt, EOFError):
+            # Ctrl+C(KeyboardInterrupt) 또는 입력 끝(EOFError) -> 튕기지 않고 정리 후 종료
+            print("\n\n⚠️ 입력이 중단되었습니다.")
+            print("👋 안전하게 종료합니다.")
+
+
 if __name__ == "__main__":
-    print("💰 경제 상식 퀴즈 게임 - 준비 중입니다!")
+    game = QuizGame()
+    game.run()
