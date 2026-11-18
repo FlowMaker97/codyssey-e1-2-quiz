@@ -25,6 +25,16 @@ HINT_PENALTY = 5   # 힌트 1번 볼 때마다 깎이는 점수
 HISTORY_SHOW = 5   # 점수 확인 화면에 보여줄 최근 기록 개수
 
 
+def safe_input(prompt):
+    """입력받은 글자에서 깨진 한글(서로게이트 문자)을 정상 글자로 복구한다."""
+    text = input(prompt)
+    try:
+        return text.encode("utf-8", "surrogateescape").decode("utf-8", "replace")
+    except UnicodeError:
+        return text.encode("utf-8", "replace").decode("utf-8")
+
+
+
 class QuizGame:
     """게임 전체(메뉴, 퀴즈 목록, 점수, 파일 저장)를 관리하는 클래스"""
 
@@ -40,7 +50,7 @@ class QuizGame:
     def get_number(self, prompt, min_value, max_value):
         """min_value~max_value 사이 정수를 받을 때까지 계속 다시 묻는다."""
         while True:
-            text = input(prompt).strip()  # 앞뒤 공백 제거 (" 1 " -> "1")
+            text = safe_input(prompt).strip()  # 앞뒤 공백 제거 (" 1 " -> "1")
             if text == "":
                 print("⚠️ 입력이 비어 있습니다. 숫자를 입력하세요.")
                 continue
@@ -57,7 +67,7 @@ class QuizGame:
     def get_text(self, prompt):
         """빈 칸이 아닌 글자를 받을 때까지 계속 다시 묻는다."""
         while True:
-            text = input(prompt).strip()
+            text = safe_input(prompt).strip()
             if text == "":
                 print("⚠️ 빈 칸은 입력할 수 없습니다. 다시 입력하세요.")
                 continue
@@ -66,7 +76,7 @@ class QuizGame:
     def get_yes_no(self, prompt):
         """y 또는 n 을 받을 때까지 묻고, y 면 True 를 돌려준다."""
         while True:
-            text = input(prompt).strip().lower()
+            text = safe_input(prompt).strip().lower()
             if text in ("y", "yes", "ㅛ"):
                 return True
             if text in ("n", "no", "ㅜ"):
@@ -80,7 +90,7 @@ class QuizGame:
         """
         hint_used = False
         while True:
-            text = input("정답 입력 (1-4, 힌트는 h): ").strip()
+            text = safe_input("정답 입력 (1-4, 힌트는 h): ").strip()
             if text.lower() in ("h", "ㅗ"):
                 if quiz.hint == "":
                     print("💡 이 문제는 힌트가 없습니다.")
@@ -191,7 +201,7 @@ class QuizGame:
         for index in range(1, 5):
             choices.append(self.get_text(f"선택지 {index}: "))
         answer = self.get_number("정답 번호 (1-4): ", 1, 4)
-        hint = input("힌트 (없으면 그냥 Enter): ").strip()  # 힌트는 비워도 됨
+        hint = safe_input("힌트 (없으면 그냥 Enter): ").strip()  # 힌트는 비워도 됨
 
         self.quizzes.append(Quiz(question, choices, answer, hint))
         self.save_state()
@@ -300,9 +310,10 @@ class QuizGame:
             "history": self.history,
         }
         try:
+            text = json.dumps(data, ensure_ascii=False, indent=2)
             with open(STATE_FILE, "w", encoding="utf-8") as file:
-                json.dump(data, file, ensure_ascii=False, indent=2)
-        except OSError as error:
+                file.write(text)
+        except (OSError, ValueError) as error:
             print(f"⚠️ 파일 저장 중 오류가 발생했습니다. ({error})")
 
     # ------------------------------------------------------------
