@@ -4,6 +4,7 @@ main.py - 💰 경제 상식 퀴즈 게임
 실행: python3 main.py
 """
 
+from default_quizzes import get_default_quizzes
 
 LINE = "=" * 44
 THIN_LINE = "-" * 44
@@ -13,7 +14,7 @@ class QuizGame:
     """게임 전체(메뉴, 퀴즈 목록, 점수)를 관리하는 클래스"""
 
     def __init__(self):
-        self.quizzes = []  # 아직 퀴즈 데이터가 없다
+        self.quizzes = get_default_quizzes()  # Quiz 객체들의 리스트
 
     # ------------------------------------------------------------
     # 입력 처리
