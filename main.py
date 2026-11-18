@@ -16,6 +16,7 @@ class QuizGame:
 
     def __init__(self):
         self.quizzes = get_default_quizzes()  # Quiz 객체들의 리스트
+        self.best_score = None  # None = 아직 한 번도 안 풀었음
 
     # ------------------------------------------------------------
     # 입력 처리
@@ -93,6 +94,7 @@ class QuizGame:
         score = round(correct_count / total * 100)
         print(LINE)
         print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+        self.update_best_score(score)
         print(LINE)
 
     # ------------------------------------------------------------
@@ -125,6 +127,22 @@ class QuizGame:
         print(THIN_LINE)
 
     # ------------------------------------------------------------
+    # 4. 점수 확인
+    # ------------------------------------------------------------
+    def update_best_score(self, score):
+        """이번 점수가 최고 점수보다 높으면 갱신한다."""
+        if self.best_score is None or score > self.best_score:
+            self.best_score = score
+            print("🎉 새로운 최고 점수입니다!")
+
+    def show_score(self):
+        """최고 점수를 보여준다."""
+        if self.best_score is None:
+            print("📭 아직 퀴즈를 풀지 않았습니다. 1번 메뉴에서 먼저 풀어 보세요!")
+            return
+        print(f"🏆 최고 점수: {self.best_score}점")
+
+    # ------------------------------------------------------------
     # 게임 실행 (메인 루프)
     # ------------------------------------------------------------
     def run(self):
@@ -140,7 +158,7 @@ class QuizGame:
                 elif choice == 3:
                     self.list_quizzes()
                 elif choice == 4:
-                    self.coming_soon()
+                    self.show_score()
                 else:  # choice == 5
                     print("👋 게임을 종료합니다. 다음에 또 만나요!")
                     break
