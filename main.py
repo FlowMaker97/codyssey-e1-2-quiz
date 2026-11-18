@@ -111,6 +111,20 @@ class QuizGame:
         print("✅ 퀴즈가 추가되었습니다!")
 
     # ------------------------------------------------------------
+    # 3. 퀴즈 목록
+    # ------------------------------------------------------------
+    def list_quizzes(self):
+        """등록된 퀴즈의 문제만 번호와 함께 보여준다."""
+        if len(self.quizzes) == 0:
+            print("📭 등록된 퀴즈가 없습니다.")
+            return
+        print(f"\n📋 등록된 퀴즈 목록 (총 {len(self.quizzes)}개)")
+        print(THIN_LINE)
+        for number, quiz in enumerate(self.quizzes, start=1):
+            print(f"[{number}] {quiz.question}")
+        print(THIN_LINE)
+
+    # ------------------------------------------------------------
     # 게임 실행 (메인 루프)
     # ------------------------------------------------------------
     def run(self):
@@ -124,7 +138,7 @@ class QuizGame:
                 elif choice == 2:
                     self.add_quiz()
                 elif choice == 3:
-                    self.coming_soon()
+                    self.list_quizzes()
                 elif choice == 4:
                     self.coming_soon()
                 else:  # choice == 5
