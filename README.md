@@ -130,3 +130,4 @@ codyssey-e1-2-quiz/
 - 기능 단위 커밋 (`Feat:` / `Fix:` / `Docs:` / `Refactor:`)
 - `feature/play` 브랜치에서 퀴즈 풀기 기능 개발 후 `main`에 병합
 - 저장소를 다른 폴더에 `clone` → 수정 후 `push` → 원래 폴더에서 `pull` 실습
+- clone 실습: 다른 폴더에 복제해서 이 줄을 추가하고 push 했습니다.
