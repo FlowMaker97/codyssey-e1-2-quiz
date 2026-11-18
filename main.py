@@ -57,6 +57,35 @@ class QuizGame:
         print("🚧 아직 준비 중인 기능입니다.")
 
     # ------------------------------------------------------------
+    # 1. 퀴즈 풀기
+    # ------------------------------------------------------------
+    def play_quiz(self):
+        """등록된 퀴즈를 순서대로 출제하고 결과를 보여준다."""
+        if len(self.quizzes) == 0:
+            print("📭 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+            return
+
+        total = len(self.quizzes)
+        print(f"\n📝 퀴즈를 시작합니다! (총 {total}문제)")
+        print(THIN_LINE)
+
+        correct_count = 0
+        for number, quiz in enumerate(self.quizzes, start=1):
+            quiz.display(number)
+            user_answer = self.get_number("정답 입력 (1-4): ", 1, 4)
+            if quiz.is_correct(user_answer):
+                print("✅ 정답입니다!")
+                correct_count += 1
+            else:
+                print(f"❌ 오답입니다. 정답은 {quiz.correct_text()} 입니다.")
+            print(THIN_LINE)
+
+        score = round(correct_count / total * 100)
+        print(LINE)
+        print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+        print(LINE)
+
+    # ------------------------------------------------------------
     # 게임 실행 (메인 루프)
     # ------------------------------------------------------------
     def run(self):
@@ -66,7 +95,7 @@ class QuizGame:
                 self.show_menu()
                 choice = self.get_number("선택: ", 1, 5)
                 if choice == 1:
-                    self.coming_soon()
+                    self.play_quiz()
                 elif choice == 2:
                     self.coming_soon()
                 elif choice == 3:
