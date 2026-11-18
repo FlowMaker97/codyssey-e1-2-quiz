@@ -5,6 +5,7 @@ main.py - 💰 경제 상식 퀴즈 게임
 """
 
 from default_quizzes import get_default_quizzes
+from quiz import Quiz
 
 LINE = "=" * 44
 THIN_LINE = "-" * 44
@@ -35,6 +36,15 @@ class QuizGame:
                 print(f"⚠️ 잘못된 입력입니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
                 continue
             return number
+
+    def get_text(self, prompt):
+        """빈 칸이 아닌 글자를 받을 때까지 계속 다시 묻는다."""
+        while True:
+            text = input(prompt).strip()
+            if text == "":
+                print("⚠️ 빈 칸은 입력할 수 없습니다. 다시 입력하세요.")
+                continue
+            return text
 
     # ------------------------------------------------------------
     # 메뉴
@@ -86,6 +96,21 @@ class QuizGame:
         print(LINE)
 
     # ------------------------------------------------------------
+    # 2. 퀴즈 추가
+    # ------------------------------------------------------------
+    def add_quiz(self):
+        """사용자에게 문제/선택지 4개/정답을 입력받아 새 퀴즈를 등록한다."""
+        print("\n📌 새로운 퀴즈를 추가합니다.")
+        question = self.get_text("문제를 입력하세요: ")
+        choices = []
+        for index in range(1, 5):
+            choices.append(self.get_text(f"선택지 {index}: "))
+        answer = self.get_number("정답 번호 (1-4): ", 1, 4)
+
+        self.quizzes.append(Quiz(question, choices, answer))
+        print("✅ 퀴즈가 추가되었습니다!")
+
+    # ------------------------------------------------------------
     # 게임 실행 (메인 루프)
     # ------------------------------------------------------------
     def run(self):
@@ -97,7 +122,7 @@ class QuizGame:
                 if choice == 1:
                     self.play_quiz()
                 elif choice == 2:
-                    self.coming_soon()
+                    self.add_quiz()
                 elif choice == 3:
                     self.coming_soon()
                 elif choice == 4:
