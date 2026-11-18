@@ -3,10 +3,14 @@ main.py - 💰 경제 상식 퀴즈 게임
 
 실행: python3 main.py
 """
+import json
+import os
 
 from default_quizzes import get_default_quizzes
 from quiz import Quiz
 
+# state.json 은 '이 파일(main.py)이 있는 폴더' = 프로젝트 루트에 저장한다.
+STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
 LINE = "=" * 44
 THIN_LINE = "-" * 44
 
@@ -17,6 +21,7 @@ class QuizGame:
     def __init__(self):
         self.quizzes = get_default_quizzes()  # Quiz 객체들의 리스트
         self.best_score = None  # None = 아직 한 번도 안 풀었음
+        self.load_state()  # 저장된 파일이 있으면 덮어쓴다
 
     # ------------------------------------------------------------
     # 입력 처리
@@ -63,10 +68,6 @@ class QuizGame:
         print("5. 종료")
         print(LINE)
 
-    def coming_soon(self):
-        """아직 만들지 않은 메뉴를 골랐을 때 안내한다."""
-        print("🚧 아직 준비 중인 기능입니다.")
-
     # ------------------------------------------------------------
     # 1. 퀴즈 풀기
     # ------------------------------------------------------------
@@ -96,6 +97,7 @@ class QuizGame:
         print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
         self.update_best_score(score)
         print(LINE)
+        self.save_state()
 
     # ------------------------------------------------------------
     # 2. 퀴즈 추가
@@ -110,6 +112,7 @@ class QuizGame:
         answer = self.get_number("정답 번호 (1-4): ", 1, 4)
 
         self.quizzes.append(Quiz(question, choices, answer))
+        self.save_state()
         print("✅ 퀴즈가 추가되었습니다!")
 
     # ------------------------------------------------------------
@@ -143,6 +146,52 @@ class QuizGame:
         print(f"🏆 최고 점수: {self.best_score}점")
 
     # ------------------------------------------------------------
+    # 파일 저장 / 불러오기 (state.json)
+    # ------------------------------------------------------------
+    def load_state(self):
+        """state.json 을 읽어서 퀴즈와 최고 점수를 복원한다."""
+        if not os.path.exists(STATE_FILE):
+            print("📂 저장된 파일이 없어 기본 퀴즈로 시작합니다.")
+            return
+
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as file:
+                data = json.load(file)
+            if not isinstance(data, dict) or not isinstance(data.get("quizzes"), list):
+                raise ValueError("quizzes 항목이 없거나 리스트가 아닙니다")
+            quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
+            best_score = data.get("best_score")
+            if best_score is not None and (isinstance(best_score, bool) or not isinstance(best_score, int)):
+                raise ValueError("best_score 는 정수 또는 null 이어야 합니다")
+        except (json.JSONDecodeError, ValueError) as error:
+            print(f"⚠️ state.json 파일이 손상되었습니다. ({error})")
+            print("🔧 기본 퀴즈 데이터로 복구합니다.")
+            self.quizzes = get_default_quizzes()
+            self.best_score = None
+            self.save_state()
+            return
+        except OSError as error:
+            print(f"⚠️ 파일을 읽을 수 없습니다. ({error}) 기본 퀴즈로 시작합니다.")
+            return
+
+        self.quizzes = quizzes
+        self.best_score = best_score
+        score_text = "없음" if best_score is None else f"{best_score}점"
+        print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(quizzes)}개, 최고점수 {score_text})")
+
+    def save_state(self):
+        """현재 퀴즈와 최고 점수를 state.json 에 저장한다."""
+        data = {
+            "quizzes": [quiz.to_dict() for quiz in self.quizzes],
+            "best_score": self.best_score,
+        }
+        try:
+            with open(STATE_FILE, "w", encoding="utf-8") as file:
+                json.dump(data, file, ensure_ascii=False, indent=2)
+        except OSError as error:
+            print(f"⚠️ 파일 저장 중 오류가 발생했습니다. ({error})")
+
+    # ------------------------------------------------------------
     # 게임 실행 (메인 루프)
     # ------------------------------------------------------------
     def run(self):
@@ -160,11 +209,14 @@ class QuizGame:
                 elif choice == 4:
                     self.show_score()
                 else:  # choice == 5
+                    self.save_state()
                     print("👋 게임을 종료합니다. 다음에 또 만나요!")
                     break
         except (KeyboardInterrupt, EOFError):
             # Ctrl+C(KeyboardInterrupt) 또는 입력 끝(EOFError) -> 튕기지 않고 정리 후 종료
             print("\n\n⚠️ 입력이 중단되었습니다.")
+            self.save_state()
+            print("💾 지금까지의 데이터를 저장했습니다.")
             print("👋 안전하게 종료합니다.")
 
 
