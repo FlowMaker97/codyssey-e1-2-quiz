@@ -12,6 +12,7 @@ quiz_game.py - 게임 전체를 관리하는 QuizGame 클래스
 import json
 import os
 import random
+import shutil
 from datetime import datetime
 
 from default_quizzes import get_default_quizzes
@@ -19,6 +20,10 @@ from quiz import Quiz
 
 # state.json 은 '이 파일이 있는 폴더' = 프로젝트 루트에 저장한다.
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
+# 손상되거나 덮어쓰기 직전의 state.json 을 보관하는 백업 파일
+BACKUP_FILE = STATE_FILE + ".bak"
+# 손상된 state.json 원본을 따로 남겨두는 파일 (원인 확인용)
+CORRUPT_FILE = STATE_FILE + ".corrupt"
 LINE = "=" * 44
 THIN_LINE = "-" * 44
 HINT_PENALTY = 5   # 힌트 1번 볼 때마다 깎이는 점수
@@ -288,6 +293,11 @@ class QuizGame:
                 raise ValueError("history 는 리스트여야 합니다")
         except (json.JSONDecodeError, ValueError) as error:
             print(f"⚠️ state.json 파일이 손상되었습니다. ({error})")
+            try:
+                shutil.move(STATE_FILE, CORRUPT_FILE)
+                print(f"💾 손상된 파일은 {os.path.basename(CORRUPT_FILE)} 로 따로 보관했습니다.")
+            except OSError:
+                pass
             print("🔧 기본 퀴즈 데이터로 복구합니다.")
             self.reset_to_default()
             self.save_state()
@@ -311,8 +321,14 @@ class QuizGame:
         }
         try:
             text = json.dumps(data, ensure_ascii=False, indent=2)
-            with open(STATE_FILE, "w", encoding="utf-8") as file:
+            # 1) 기존 파일을 .bak 으로 백업  2) 임시 파일에 먼저 쓰고  3) 한 번에 교체
+            #    → 저장 도중 꺼져도 state.json 이 반쯤 쓰인 채로 깨지지 않는다.
+            if os.path.exists(STATE_FILE):
+                shutil.copyfile(STATE_FILE, BACKUP_FILE)
+            temp_file = STATE_FILE + ".tmp"
+            with open(temp_file, "w", encoding="utf-8") as file:
                 file.write(text)
+            os.replace(temp_file, STATE_FILE)
         except (OSError, ValueError) as error:
             print(f"⚠️ 파일 저장 중 오류가 발생했습니다. ({error})")
 
